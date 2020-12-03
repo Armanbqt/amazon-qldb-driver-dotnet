@@ -43,7 +43,7 @@ jobs:
           dotnet-version: '3.1.x'
     
     - name: Install dependencies
-      run: dotnet restore
+      run: dotnet restore Amazon.QLDB.Driver.sln
     - name: Build
       run: dotnet build --configuration Release --no-restore
     - name: Run Unit Test
