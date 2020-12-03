@@ -45,8 +45,8 @@ jobs:
     - name: Install dependencies
       run: dotnet restore Amazon.QLDB.Driver.sln
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build restore Amazon.QLDB.Driver.sln --configuration Release --no-restore
     - name: Run Unit Test
-      run: dotnet test Amazon.QLDB.Driver.Tests
+      run: dotnet test Amazon.QLDB.Driver.Tests Amazon.QLDB.Driver.Tests.csproj
     - name: Integration Test
       run: dotnet test Amazon.QLDB.Driver.IntegrationTests --no-restore --verbosity normal --settings Amazon.QLDB.Driver.IntegrationTests/.runsettings
