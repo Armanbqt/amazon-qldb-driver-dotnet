@@ -689,86 +689,86 @@ namespace Amazon.QLDB.Driver.IntegrationTests
             }
         }
 
-        //[TestMethod]
-        //[DynamicData(nameof(CreateIonValues), DynamicDataSourceType.Method)]
-        //public void Execute_UpdateIonTypes_IonTypesAreUpdated(IIonValue ionValue)
-        //{
-        //    // Given.
-        //    // Create Ion struct to be inserted.
-        //    IIonValue ionStruct = ValueFactory.NewEmptyStruct();
-        //    ionStruct.SetField(Constants.ColumnName, ValueFactory.NewNull());
+        [TestMethod]
+        [DynamicData(nameof(CreateIonValues), DynamicDataSourceType.Method)]
+        public void Execute_UpdateIonTypes_IonTypesAreUpdated(IIonValue ionValue)
+        {
+            // Given.
+            // Create Ion struct to be inserted.
+            IIonValue ionStruct = ValueFactory.NewEmptyStruct();
+            ionStruct.SetField(Constants.ColumnName, ValueFactory.NewNull());
 
-        //    // Insert first record which will be subsequently updated.
-        //    var insertQuery = $"INSERT INTO {Constants.TableName} ?";
-        //    var insertCount = qldbDriver.Execute(txn =>
-        //    {
-        //        var result = txn.Execute(insertQuery, ionStruct);
+            // Insert first record which will be subsequently updated.
+            var insertQuery = $"INSERT INTO {Constants.TableName} ?";
+            var insertCount = qldbDriver.Execute(txn =>
+            {
+                var result = txn.Execute(insertQuery, ionStruct);
 
-        //        var count = 0;
-        //        foreach (var row in result)
-        //        {
-        //            count++;
-        //        }
-        //        return count;
-        //    });
-        //    Assert.AreEqual(1, insertCount);
+                var count = 0;
+                foreach (var row in result)
+                {
+                    count++;
+                }
+                return count;
+            });
+            Assert.AreEqual(1, insertCount);
 
-        //    // When.
-        //    var updateQuery = $"UPDATE { Constants.TableName } SET { Constants.ColumnName } = ?";
-        //    var updateCount = qldbDriver.Execute(txn =>
-        //    {
-        //        var result = txn.Execute(updateQuery, ionValue);
+            // When.
+            var updateQuery = $"UPDATE { Constants.TableName } SET { Constants.ColumnName } = ?";
+            var updateCount = qldbDriver.Execute(txn =>
+            {
+                var result = txn.Execute(updateQuery, ionValue);
 
-        //        var count = 0;
-        //        foreach (var row in result)
-        //        {
-        //            count++;
-        //        }
-        //        return count;
-        //    });
-        //    Assert.AreEqual(1, updateCount);
+                var count = 0;
+                foreach (var row in result)
+                {
+                    count++;
+                }
+                return count;
+            });
+            Assert.AreEqual(1, updateCount);
 
-        //    // Then.
-        //    IIonValue searchResult;
-        //    if (ionValue.IsNull)
-        //    {
-        //        var searchQuery = $@"SELECT VALUE { Constants.ColumnName } FROM { Constants.TableName }
-        //                             WHERE { Constants.ColumnName } IS NULL";
-        //        searchResult = qldbDriver.Execute(txn =>
-        //        {
-        //            var result = txn.Execute(searchQuery);
+            // Then.
+            IIonValue searchResult;
+            if (ionValue.IsNull)
+            {
+                var searchQuery = $@"SELECT VALUE { Constants.ColumnName } FROM { Constants.TableName }
+                                     WHERE { Constants.ColumnName } IS NULL";
+                searchResult = qldbDriver.Execute(txn =>
+                {
+                    var result = txn.Execute(searchQuery);
 
-        //            IIonValue ionVal = null;
-        //            foreach (var row in result)
-        //            {
-        //                ionVal = row;
-        //            }
-        //            return ionVal;
-        //        });
-        //    }
-        //    else
-        //    {
-        //        var searchQuery = $@"SELECT VALUE { Constants.ColumnName } FROM { Constants.TableName }
-        //                             WHERE { Constants.ColumnName } = ?";
-        //        searchResult = qldbDriver.Execute(txn =>
-        //        {
-        //            var result = txn.Execute(searchQuery, ionValue);
+                    IIonValue ionVal = null;
+                    foreach (var row in result)
+                    {
+                        ionVal = row;
+                    }
+                    return ionVal;
+                });
+            }
+            else
+            {
+                var searchQuery = $@"SELECT VALUE { Constants.ColumnName } FROM { Constants.TableName }
+                                     WHERE { Constants.ColumnName } = ?";
+                searchResult = qldbDriver.Execute(txn =>
+                {
+                    var result = txn.Execute(searchQuery, ionValue);
 
-        //            IIonValue ionVal = null;
-        //            foreach (var row in result)
-        //            {
-        //                ionVal = row;
-        //            }
-        //            return ionVal;
-        //        });
-        //    }
+                    IIonValue ionVal = null;
+                    foreach (var row in result)
+                    {
+                        ionVal = row;
+                    }
+                    return ionVal;
+                });
+            }
 
-        //    if (searchResult.Type() != ionValue.Type())
-        //    {
-        //        Assert.Fail($"The queried value type, { searchResult.Type().ToString() }," +
-        //            $"does not match { ionValue.Type().ToString() }.");
-        //    }
-        //}
+            if (searchResult.Type() != ionValue.Type())
+            {
+                Assert.Fail($"The queried value type, { searchResult.Type().ToString() }," +
+                    $"does not match { ionValue.Type().ToString() }.");
+            }
+        }
 
         [TestMethod]
         public void Execute_ExecuteLambdaThatDoesNotReturnValue_RecordIsUpdated()
