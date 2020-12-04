@@ -576,6 +576,7 @@ namespace Amazon.QLDB.Driver.IntegrationTests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(OccConflictException))]
         public void Execute_UpdateSameRecordAtSameTime_ThrowsOccException()
         {
             QldbDriver driver = integrationTestBase.CreateDriver(amazonQldbSessionConfig, default, default, 0);
@@ -602,66 +603,23 @@ namespace Amazon.QLDB.Driver.IntegrationTests
             string selectQuery = $"SELECT VALUE {Constants.ColumnName} FROM {Constants.TableName}";
             string updateQuery = $"UPDATE {Constants.TableName} SET {Constants.ColumnName} = ?";
 
-            try
-            {
-                // Run three threads updating the same document in parallel to trigger OCC exception.
-                Parallel.For(0, 3, (i) => driver.Execute(txn =>
-                    {
-                        // Query table.
-                        var result = txn.Execute(selectQuery);
-
-                        var currentValue = 0;
-                        foreach (var row in result)
-                        {
-                            currentValue = row.IntValue;
-                        }
-
-                        // Update document.
-                        var ionValue = ValueFactory.NewInt(currentValue + 5);
-                        txn.Execute(updateQuery, ionValue);
-                    }, RetryPolicy.Builder().WithMaxRetries(0).Build()));
-            }
-            catch (AggregateException e)
-            {
-                // Tasks only throw AggregateException which nests the underlying exception.
-                Assert.AreEqual(typeof(OccConflictException), e.InnerException.GetType());
-
-                // Update document to make sure everything still works after the OCC exception.
-                int updatedValue = 0;
-                driver.Execute(txn =>
+            driver.Execute(txn =>
                 {
+                    // Query table.
                     var result = txn.Execute(selectQuery);
-
                     var currentValue = 0;
                     foreach (var row in result)
                     {
                         currentValue = row.IntValue;
                     }
-
-                    updatedValue = currentValue + 5;
-
-                    var ionValue = ValueFactory.NewInt(updatedValue);
-                    txn.Execute(updateQuery, ionValue);
-                });
-
-                // Verify the update was successful.
-                int intVal = driver.Execute(txn =>
-                {
-                    var result = txn.Execute(selectQuery);
-
-                    int intValue = 0;
-                    foreach (var row in result)
+                    driver.Execute(txn =>
                     {
-                        intValue = row.IntValue;
-                    }
+                        // Update document.
+                        var ionValue = ValueFactory.NewInt(currentValue + 5);
+                        txn.Execute(updateQuery, ionValue);
+                    });
+                }, RetryPolicy.Builder().WithMaxRetries(0).Build());
 
-                    return intValue;
-                });
-
-                Assert.AreEqual(updatedValue, intVal);
-
-                return;
-            }
             Assert.Fail("Did not raise TimeoutException.");
         }
 
