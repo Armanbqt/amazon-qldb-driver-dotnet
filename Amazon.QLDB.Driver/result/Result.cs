@@ -184,7 +184,12 @@ namespace Amazon.QLDB.Driver
             /// <returns>The current IOUsage statistics.</returns>
             internal IOUsage GetConsumedIOs()
             {
-                return new IOUsage(this.readIOs, this.writeIOs);
+                if (this.readIOs != null || this.writeIOs != null)
+                {
+                    return new IOUsage(this.readIOs.GetValueOrDefault(), this.writeIOs.GetValueOrDefault());
+                }
+
+                return default;
             }
 
             /// <summary>
@@ -194,7 +199,12 @@ namespace Amazon.QLDB.Driver
             /// <returns>The current TimingInformation statistics.</returns>
             internal TimingInformation GetTimingInformation()
             {
-                return new TimingInformation(this.processingTimeMilliseconds);
+                if (this.processingTimeMilliseconds != null)
+                {
+                    return new TimingInformation(this.processingTimeMilliseconds.Value);
+                }
+
+                return default;
             }
 
             /// <summary>
